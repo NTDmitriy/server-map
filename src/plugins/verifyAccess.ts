@@ -1,28 +1,25 @@
-import fastifyJwt from "@fastify/jwt"
 import { FastifyInstance, FastifyPluginOptions, FastifyReply, FastifyRequest } from "fastify"
 import fp from "fastify-plugin"
+import TokensService from "../services/tokens/tokens.service"
 
 const plugin = async (fastify: FastifyInstance, options: FastifyPluginOptions) => {
     const { auth } = options
 
-    fastify.register(fastifyJwt, {
-        secret: auth.secret,
-    })
+    const tokensService = new TokensService(auth.secret)
 
     fastify.decorate("verifyAccess", async function (request: FastifyRequest, reply: FastifyReply) {
+ 
         try {
             const { accessToken, refreshToken } = request.cookies
 
             if (accessToken && !refreshToken) {
-                const decoded = fastify.jwt.verify(accessToken)
-
+                const decoded = tokensService.verify(accessToken)
                 ;(request as any).user = decoded
                 return
             }
 
             if (refreshToken) {
-                const decoded = fastify.jwt.verify(refreshToken)
-
+                const decoded = tokensService.verify(refreshToken)
                 ;(request as any).user = decoded
                 return
             }

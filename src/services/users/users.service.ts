@@ -5,7 +5,7 @@ import { FastifyBaseLogger } from "fastify"
 import { prisma } from "../../prismaClient"
 import roles from "../../roles.json"
 import { TRoles } from "../../types/role.type"
-import { ISystemAuthData } from "./users.type"
+import { IAuthData, IAuthSteamData, ISystemAuthData } from "./users.type"
 
 class UsersService {
     private log: FastifyBaseLogger
@@ -28,12 +28,29 @@ class UsersService {
         this.log.info({ success: true }, "users.init")
     }
 
-    async create(email: string, password: string, system = false): Promise<User> {
-        return await prisma.user.create({
+    async create(data: IAuthData): Promise<User> {
+        const { email, password, name, picture: avatarPath, system } = data
+
+        return prisma.user.create({
             data: {
                 email,
                 password,
-                roles: system ? [Role.SUPER_ADMIN] : [],
+
+                ...(system && { roles: [Role.SUPER_ADMIN] }),
+                ...(name && { name }),
+                ...(avatarPath && { avatarPath }),
+            },
+        })
+    }
+    async createWithSteam(data: IAuthSteamData): Promise<User> {
+        const { name, picture: avatarPath, system, steamId } = data
+
+        return prisma.user.create({
+            data: {
+                steamId,
+                ...(system && { roles: [Role.SUPER_ADMIN] }),
+                ...(name && { name }),
+                ...(avatarPath && { avatarPath }),
             },
         })
     }
@@ -42,6 +59,13 @@ class UsersService {
         return await prisma.user.findUnique({
             where: {
                 email,
+            },
+        })
+    }
+    async getBySteamId(steamId: string) {
+        return await prisma.user.findUnique({
+            where: {
+                steamId,
             },
         })
     }
@@ -96,8 +120,6 @@ class UsersService {
             }
         }
 
-        console.log(Array.from(permissionsSet))
-
         return Array.from(permissionsSet)
     }
 
@@ -127,7 +149,11 @@ class UsersService {
 
         const hashPassword = await hash(password)
 
-        const result = await this.create(email, hashPassword, true)
+        const result = await this.create({
+            email: email,
+            password: hashPassword,
+            system: true,
+        })
 
         this.log.info({ password, result }, "users.createSystemUser")
 

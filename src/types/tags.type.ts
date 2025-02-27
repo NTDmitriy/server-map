@@ -1,12 +1,16 @@
-export const TAGS = {
+export const MAIN_TAGS = {
     AUTH: "Auth",
     USER: "User",
+} as const
+
+export const HELPFUL_TAGS = {
     SIGNIN: "Signin",
     REFRESH: "Refresh",
     LOGOUT: "Logout",
+    PASSPORT_GOOGLE: "PassportGoogle",
+    PASSPORT_STEAM: "PassportSteam",
+    PASSPORT_CALLBACK: "PassportCallback",
 } as const
-
-export type TProcedureTag = (typeof TAGS)[keyof typeof TAGS]
 
 export const API_GUARD = {
     PUBLIC: "Public",
@@ -15,5 +19,6 @@ export const API_GUARD = {
 } as const
 
 export type TApiGuard = (typeof API_GUARD)[keyof typeof API_GUARD]
-
-export type TTags = [TApiGuard, ...TProcedureTag[]]
+export type TMainTags = (typeof MAIN_TAGS)[keyof typeof MAIN_TAGS]
+export type THelpfulTags = (typeof HELPFUL_TAGS)[keyof typeof HELPFUL_TAGS]
+export type TTags = [TApiGuard, TMainTags, ...THelpfulTags[]]

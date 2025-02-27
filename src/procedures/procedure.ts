@@ -25,7 +25,7 @@ class Procedure {
         this.log = params.log
     }
 
-    async execute(params: any): Promise<any> {
+    async execute(params: any, user?: any): Promise<any> {
         return null
     }
 
@@ -36,7 +36,7 @@ class Procedure {
         const cls = this.constructor as typeof Procedure
 
         if (cls.tags.includes(API_GUARD.PUBLIC)) {
-            return this.execute(data)
+            return this.execute(data, user)
         }
 
         const [name, tag] = [cls.title, cls.tags[1].toLowerCase()]
@@ -53,7 +53,7 @@ class Procedure {
             throw error
         }
 
-        return this.execute(data)
+        return this.execute(data, user)
     }
 }
 

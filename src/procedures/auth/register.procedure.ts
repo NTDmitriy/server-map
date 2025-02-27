@@ -2,13 +2,13 @@ import { User } from "@prisma/client"
 import { hash } from "argon2"
 import { IAuthData } from "../../services/users/users.type"
 import { API_METHODS } from "../../types/api-methods.type"
-import { API_GUARD, TAGS, TTags } from "../../types/tags.type"
+import { API_GUARD, HELPFUL_TAGS, MAIN_TAGS, TTags } from "../../types/tags.type"
 import Procedure from "../procedure"
 
 class LoginProcedure extends Procedure {
     static title = "register"
     static method = API_METHODS.POST
-    static tags: TTags = [API_GUARD.PUBLIC, TAGS.AUTH, TAGS.SIGNIN]
+    static tags: TTags = [API_GUARD.PUBLIC, MAIN_TAGS.AUTH, HELPFUL_TAGS.SIGNIN]
     static summary = "Регистрания нового пользователя"
 
     static paramsSchema = {
@@ -47,7 +47,7 @@ class LoginProcedure extends Procedure {
 
         const hashedPassword = await hash(password)
 
-        const user = await this.services.users.create(email, hashedPassword)
+        const user = await this.services.users.create({ email, password: hashedPassword })
 
         return user
     }

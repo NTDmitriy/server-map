@@ -1,9 +1,9 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify"
 import { IProcedure } from "./procedures"
-import { IUserInToken } from "./services/users/users.type"
+import { TJwtVerifyObject } from "./services/tokens/tokens.type"
 import { API_METHODS } from "./types/api-methods.type"
 import { TServices } from "./types/servises.type"
-import { API_GUARD, TAGS } from "./types/tags.type"
+import { API_GUARD, HELPFUL_TAGS } from "./types/tags.type"
 
 interface Params {
     procedures: IProcedure[]
@@ -15,11 +15,16 @@ export default async (app: FastifyInstance, { services, procedures }: Params) =>
         const { title, method, paramsSchema, resultSchema, tags, ...rest } = Procedure
 
         const procInstance = new Procedure({ services, log: app.log })
-
         const auth = []
 
-        if (!tags.includes(API_GUARD.PUBLIC) && !tags.includes(TAGS.LOGOUT)) {
+        if (!tags.includes(API_GUARD.PUBLIC)) {
             auth.push((app as any).verifyAccess)
+        }
+        if (tags.includes(HELPFUL_TAGS.PASSPORT_GOOGLE)) {
+            auth.push(services.passport.google())
+        }
+        if (tags.includes(HELPFUL_TAGS.PASSPORT_STEAM)) {
+            auth.push(services.passport.steam())
         }
 
         app.route({
@@ -37,28 +42,23 @@ export default async (app: FastifyInstance, { services, procedures }: Params) =>
                 response: {
                     200: resultSchema,
                 },
-                tags,
+                tags: [tags[1]],
                 ...rest,
             },
 
             handler: async function (request: FastifyRequest, reply: FastifyReply) {
                 try {
                     const params = method === API_METHODS.GET ? request.query : request.body
-                    const user: IUserInToken = request.user as IUserInToken
+                    const user: TJwtVerifyObject = request.user as TJwtVerifyObject
 
                     ;(params as any).user = user
+
                     const result = await procInstance.exec(params)
 
-                    if (tags.includes(TAGS.LOGOUT)) {
-                        services.tokens.clearTokens(reply)
-                    } else {
-                        if (tags.includes(TAGS.SIGNIN)) {
-                            services.tokens.generateTokens({ userId: result.id }, reply)
-                        }
+                    services.tokens.proccess(reply, tags, result, user)
 
-                        if (tags.includes(API_GUARD.PRIVATE)) {
-                            services.tokens.generateAccessToken({ userId: user.userId }, reply)
-                        }
+                    if (tags.includes(HELPFUL_TAGS.PASSPORT_CALLBACK)) {
+                        await reply.redirect("http://localhost:3000")
                     }
 
                     await reply.send(result)

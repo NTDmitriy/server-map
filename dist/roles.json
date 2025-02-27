@@ -1,0 +1,14 @@
+[
+    {
+        "name": "SUPER_ADMIN",
+        "permissions": ["auth:logout", "auth:checkAccess", "auth:checkRefresh"]
+    },
+    {
+        "name": "ADMIN",
+        "permissions": ["auth:logout", "auth:checkAccess", "auth:checkRefresh"]
+    },
+    {
+        "name": "USER",
+        "permissions": ["auth:logout", "auth:checkAccess", "auth:checkRefresh"]
+    }
+]

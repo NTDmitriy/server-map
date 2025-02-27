@@ -4,7 +4,9 @@ import fp from "fastify-plugin"
 
 const plugin = async (fastify: FastifyInstance, options: FastifyPluginOptions) => {
     fastify.register(fastifyCors, {
-        origin: ["http://localhost:3000"],
+      origin: [
+        "http://localhost:3000",
+      ],
         credentials: true,
     })
 }
