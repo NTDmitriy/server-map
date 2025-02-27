@@ -42,7 +42,7 @@ const plugin = async (fastify: FastifyInstance, options: FastifyPluginOptions) =
             {
                 returnURL: "http://localhost:8080/api/auth/steam/callback",
                 realm: "http://localhost:8080/",
-                apiKey: "7DE1308F391F276B869AA7D4525DD839",
+                apiKey: "",
             },
             function (identifier: any, profile: any, done: any) {
                 return done(null, profile)
